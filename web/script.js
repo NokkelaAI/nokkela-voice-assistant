@@ -185,14 +185,14 @@ document.getElementById('modelSelect').addEventListener('change', function(){
    }
    // toggle Chat URL field for llama, qwen, deepseek, qwq, gemma3, cogito or custom ollama models
    const chatUrlContainer = document.getElementById('chatUrlContainer');
-   if (['llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b', 'custom-ollama'].includes(this.value)) {
+   if (['llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'gemma3:4b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b', 'custom-ollama'].includes(this.value)) {
        chatUrlContainer.classList.remove('hidden');
    } else {
        chatUrlContainer.classList.add('hidden');
    }
    // toggle Hide Reasoning for any reasoning model
    const hideReasoningContainer = document.getElementById('hideReasoningContainer');
-   if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b'].includes(this.value)) {
+   if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq'].includes(this.value)) {
        hideReasoningContainer.classList.remove('hidden');
    } else {
        hideReasoningContainer.classList.add('hidden');
@@ -200,7 +200,7 @@ document.getElementById('modelSelect').addEventListener('change', function(){
    // toggle Local Ollama Service option for cogito:3b
    const localServiceContainer = document.getElementById('localServiceContainer');
    const chatUrlInput = document.getElementById('chatUrlInput');
-   if (this.value === 'cogito:3b') {
+   if (['gemma3:4b', 'cogito:3b'].includes(this.value)) {
        localServiceContainer.classList.remove('hidden');
        // prefill URL when toggle is checked by default
        if (document.getElementById('localServiceToggle').checked) {
@@ -542,7 +542,7 @@ async function sendText(text) {
 
     // Handle "Hide Reasoning" for any reasoning model
     let botMessage = data.response;
-    if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b'].includes(document.getElementById('modelSelect').value) &&
+    if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq'].includes(document.getElementById('modelSelect').value) &&
         document.getElementById('hideReasoningToggle').checked) {
       botMessage = botMessage
         // strip out <think>…</think> blocks
@@ -802,7 +802,7 @@ async function sendAudio(audioBlob, speaker = '', language = '') {
        const botMessage = data.response;
        // prepare TTS text, stripping <think>…</think> if hideReasoning is enabled
        let ttsText = botMessage;
-       if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b'].includes(document.getElementById('modelSelect').value)
+       if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq'].includes(document.getElementById('modelSelect').value)
            && !document.getElementById('hideReasoningContainer').classList.contains('hidden')
            && document.getElementById('hideReasoningToggle').checked) {
            ttsText = botMessage

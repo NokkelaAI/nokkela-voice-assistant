@@ -201,7 +201,7 @@ def transcribe():
             chat_model = "gpt-4.1"
         elif selected_model == 'gpt-4o':
             chat_model = "gpt-4o"
-        elif selected_model in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b'):
+        elif selected_model in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'gemma3:4b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b'):
             # for Llama4-Scout, Llama3.3, Qwen3, DeepSeek, QwQ, Gemma and Cogito use model name directly
             chat_model = selected_model
         elif selected_model == 'custom-ollama':
@@ -234,7 +234,7 @@ def transcribe():
 
         # Send the POST request to the chat completions endpoint
         # select chat endpoint: custom for qwq, default otherwise
-        if request.form.get('model') in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b', 'custom-ollama'):
+        if request.form.get('model') in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'gemma3:4b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b', 'custom-ollama'):
             chat_url = request.form.get('chat_url', OLLAMA_CHAT_URL)
         else:
             chat_url = OPENAI_CHAT_URL
@@ -359,7 +359,7 @@ def chat():
         chat_model = 'gpt-4.1'
     elif selected == 'gpt-4o':
         chat_model = 'gpt-4o'
-    elif selected in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b'):
+    elif selected in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'gemma3:4b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b'):
         # for Llama4-Scout, Llama3.3, Qwen3, DeepSeek, QwQ, Gemma3 and Cogito use model name directly
         chat_model = selected
     elif selected_model == 'custom-ollama':
@@ -368,7 +368,7 @@ def chat():
     else:
         chat_model = 'o4-mini'
     # choose endpoint
-    if selected in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b', 'custom-ollama'):
+    if selected in ('llama4:scout', 'llama3.3', 'qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b', 'gemma3:4b', 'cogito:70b', 'cogito:32b', 'cogito:14b', 'cogito:8b', 'cogito:3b', 'custom-ollama'):
         chat_url = data.get('chat_url', OLLAMA_CHAT_URL)
     else:
         chat_url = OPENAI_CHAT_URL
