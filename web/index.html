@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!--
+# Copyright (C) 2025 Nokkela.AI
+#
+# This file is part of Nokkela Voice Assistant (NVA)
+#
+# Nokkela Voice Assistant (NVA) is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# Nokkela Voice Assistant (NVA) is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Nokkela Voice Assistant (NVA). If not, see https://www.gnu.org/licenses/.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Force desktop layout on mobile devices -->
+    <meta name="viewport" content="width=1024, initial-scale=1">
+    <title>Nokkela Voice Assistant (NVA)</title>
+    <!-- Link to the CSS file for styling -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Include D3.js library -->
+    <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
+    <script src="d3.v7.min.js"></script>
+    <!-- Optional: only set desktop viewport meta for mobile user agents -->
+    <script>
+      if (/Mobi|Android|iPad|Tablet/i.test(navigator.userAgent)) {
+        let mv = document.createElement('meta');
+        mv.name = 'viewport';
+        mv.content = 'width=1024, initial-scale=1';
+        document.head.appendChild(mv);
+      }
+    </script>
+</head>
+<body>
+    <!-- Prompt image container at top-right -->
+    <div id="promptImageContainer">
+      <img id="promptImage" src="images/image_sp_assistant.png" alt="Prompt Background" />
+    </div>
+    <!-- header -->
+    <h1>Nokkela Voice Assistant (NVA)</h1>
+
+    <!-- Bubble for check secure connnection -->
+    <div id="insecure-bubble" class="hidden"></div>
+
+    <!-- Settings section for model and system prompt selection -->
+    <div id="settings">
+      <button id="resetSessionButton" style="margin-right:10px;">Reset Session</button>
+      <!-- Dropdown for selecting the system prompt ("Assistant" or "Translator") -->
+      <label for="systemPromptSelect">System Prompt:</label>
+      <select id="systemPromptSelect">
+          <option value="Assistant" selected>Assistant</option>
+          <option value="Translator">Translator</option>
+          <option value="AssistantShort">Assistant (shortened)</option>
+          <option value="Instructor">Instructor</option>
+          <option value="MediDoc">MediDoc</option>
+          <option value="Cleric">Cleric</option>
+          <option value="StoryTeller">StoryTeller</option>
+      </select>
+      <!-- Dropdown for model selection  -->
+      <label for="modelSelect">Model:</label>
+      <select id="modelSelect">
+          {% if show_chatgpt %}
+          <option value="o4-mini" selected>ChatGPT-o4-mini</option>
+          <option value="o3-mini">ChatGPT-o3-mini</option>
+          <option value="gpt-4.1">ChatGPT-4.1</option>
+          <option value="gpt-4o">ChatGPT-4o</option>
+          {% endif %}
+          <option value="llama4:scout" {% if not show_chatgpt %}selected{% endif %}>Llama4-Scout-109B</option>
+          <option value="llama3.3">Llama3.3-70B</option>
+          <option value="qwen3:235b">Qwen3-235B-A22B</option>
+          <option value="qwen3:32b">Qwen3-32B</option>
+          <option value="qwen3:30b">Qwen3-30B-A3B</option>
+          <option value="deepseek-r1:671b">DeepSeek-R1-671B</option>
+          <option value="deepseek-r1:8b">DeepSeek-R1-0528-Qwen3-8B</option>
+          <option value="qwq">QwQ-32B</option>
+          <option value="gemma3:27b">Gemma3-27B</option>
+          <option value="cogito:70b">Cogito-70B</option>
+          <option value="cogito:32b">Cogito-32B</option>
+          <option value="cogito:14b">Cogito-14B</option>
+          <option value="cogito:8b">Cogito-8B</option>
+          <option value="cogito:3b">Cogito-3B</option>
+          <option value="custom-ollama">Custom Ollama</option>
+      </select>
+      <!-- API-Key container, hidden by default. It is displayed when "ChatGPT-o3-mini" is selected. -->
+      <span id="apiKeyContainer" class="hidden">
+        <label for="apiKeyInput">Other API-Key:</label>
+        <input type="text" id="apiKeyInput" placeholder="Enter API-Key">
+      </span>
+      <span id="chatUrlContainer" class="hidden">
+        <label for="chatUrlInput">Ollama Server URL:</label>
+        <input type="text" id="chatUrlInput" placeholder="Enter Ollama API URL">
+      </span>
+      <span id="localServiceContainer" class="hidden">
+        <label for="localServiceToggle">Local Ollama Service:</label>
+        <input type="checkbox" id="localServiceToggle" checked>
+      </span>
+      <span id="customOllamaContainer" class="hidden">
+        <label for="customOllamaInput">Custom Ollama Model:</label>
+        <input type="text" id="customOllamaInput" placeholder="Enter Ollama model name">
+      </span>
+      <!-- Hide Reasoning toggle for qwq model -->
+      <span id="hideReasoningContainer" class="hidden">
+        <label for="hideReasoningToggle">Doesn't articulate "Reasoning":</label>
+        <input type="checkbox" id="hideReasoningToggle" checked>
+      </span>
+      <!-- Error display container -->
+      <div id="errorDisplay" style="color: red; margin: 10px 0;"></div>
+    </div>
+
+    <!-- Text input for manual message -->
+    <div id="textInputContainer" style="margin-top:10px;">
+      <label for="textInput">Silent Input Text</label><br>
+      <textarea id="textInput"
+                placeholder="Enter Text"
+                style="width:800px; height:60px; padding:5px; resize: both;"></textarea><br>
+      <button id="sendTextButton" style="margin-top:5px;">Send Text</button>
+    </div>
+
+    <!-- Recording controls will be dynamically generated here based on the selected system prompt -->
+    <div id="recordingControls">
+      <!-- Dynamically generated recording control elements will appear here -->
+    </div>
+
+    <!-- Container for the D3.js visualization -->
+    <div id="cloud-container">
+        <!-- The blob visualization will be rendered here -->
+    </div>
+
+    <!-- Chat history area to display conversation messages -->
+    <div id="chat-history">
+        <!-- Chat messages will be appended here -->
+    </div>
+
+    <!-- ENV TTS_HD & TTS_VOICE -->
+    <script>
+        window.TTS_HD_ENABLED = {{ 'true' if tts_hd_enabled else 'false' }};
+        window.TTS_VOICE = "{{ tts_voice }}";
+    </script>
+
+    <!-- check secure connection -->
+    <script>
+        window.envConfig = {
+          transcribeUrl: "{{ OPENAI_TRANSCRIBE_URL }}",
+          ollamaUrl:     "{{ OLLAMA_CHAT_URL }}",
+          ttsUrl:        "{{ OPENAI_TTS_URL }}"
+        };
+    </script>
+
+    <!-- Include the main JavaScript file -->
+    <script src="script.js"></script>
+
+    <!-- footer -->
+    <a id="version" href="https://www.nokkela-voice-assistant.ai" target="_blank">
+      By Nokkela.AI - Version 2.4.1<br>
+      <div id="serverInfo" class="tooltip-content">
+          <p><strong>ServerMode SSL Port:</strong> https://[ip]:20001</p>
+          <p><strong>For debugging and analysis purposes</strong>, log files are automatically stored locally in the NVA - Docker folder <code>/app/data</code></p>
+          <h4>Roadmap</h4>
+          <ul>
+              <li>[ ] Full Support for Mobile Devices (Apple iOS / Android) - workarounds are necessary due to various system limitations</li>
+              <li>[ ] Supports fragmented object processing, resulting in shorter response times and a more natural flow of speech without having to wait for the complete TTS processing</li>
+              <li>[ ] Support for OpenAI Realtime API</li>
+              <li>[x] Version 2.4.1 - Add Support for (Remote) Ollama "DeepSeek-R1-0528-Qwen3-8B" Reasoning Model (LLM) and "Gemma3-27B" Model (LLM)</li>
+              <li>[x] Version 2.4 - Add SystemPrompt "StoryTeller"</li>
+              <li>[x] Support for (Remote) Ollama "DeepSeek-R1-671B" Reasoning Model (LLM)</li>
+              <li>[x] Version 2.3 - Add SystemPrompt Images</li>
+              <li>[x] Support for (Remote) Ollama "Qwen3-235B-A22B" MoE Model (LLM)</li>
+              <li>[x] Version 2.2 - Avoid TTS Error "string_too_long" (ctx max_length 4096)</li>
+              <li>[x] Version 2.1 - Add SystemPrompts "Instructor", "MediDoc", "Cleric"</li>
+              <li>[x] Add: Press ESC to Cancel all ongoing actions</li>
+              <li>[x] Version 2.0 - Partial Support for Contextual Communication (+ Reset Session)</li>
+              <li>[x] Support for (Remote) Ollama "Llama4-Scout-109B" MoE Model (LLM)</li>
+              <li>[x] Version 1.9 - Partial Support for Apple iPad using Chrome (as a client device)</li>
+              <li>[x] Ignore emojis in models during speech output</li>
+              <li>[x] Support for (Remote) Ollama "Qwen3-30B-A3B" MoE Model (LLM)</li>
+              <li>[x] Support for (Remote) Ollama "Qwen3-32B" Reasoning Model (LLM)</li>
+              <li>[x] Offline d3.v7.min.js</li>
+              <li>[x] Add: Press Enter (without Shift) to send the text</li>
+              <li>[x] Add Warning for Insecure HTTP Custom Server URLs</li>
+              <li>[x] Add Docker ENV Support for TTS_VOICE</li>
+              <li>[x] Version 1.8 - Initial Support for "Full Selfhosted Setup" (OpenAI is not used at all)</li>
+              <li>[x] Version 1.7 - Initial Support for external (Whisper)STT Speech-to-Text API Server (Selfhosted)</li>
+              <li>[x] Add Docker ENV Support for WEB_AUTH_USER and WEB_AUTH_PW</li>
+              <li>[x] Version 1.6 - Support for "Custom Ollama Models" in Voice Mode</li>
+              <li>[x] Version 1.5 - Support for the spacebar has been added, allowing for quick voice interaction</li>
+              <li>[x] Version 1.4 - Debug Text logging is shortened for privacy reasons</li>
+              <li>[x] Version 1.3 - Added "Silent Input Text" function, allowing for interaction in quiet spaces where speech is received only via headphones</li>
+              <li>[x] Version 1.2 - Initial Support for external (X)TTS Text-to-Speech API Server (Selfhosted)</li>
+              <li>[x] Support for (Local) Ollama "Cogito-8B" (+3B) Model (LLM only) - OpenAI for STT & TTS</li>
+              <li>[x] Support for (Remote) Ollama "Cogito-70B" (+32B, +14B) Model (LLM only) - OpenAI for STT & TTS</li>
+              <li>[x] Support for (Remote) Ollama "QwQ-32B" Reasoning Model (LLM only) - OpenAI for STT & TTS</li>
+              <li>[x] Support for (Remote) Ollama "Llama3.3-70" Model (LLM only) - OpenAI for STT & TTS</li>
+              <li>[x] Version 1.1 - Initial Support for external Ollama API Server (LLM only)</li>
+              <li>[x] Offers SSL / TLS connections out of the box</li>
+              <li>[x] For debugging purposes or for future analyses, log files are automatically stored under /app/data</li>
+              <li>[x] Supports language translation for two different speakers</li>
+              <li>[x] System prompt takes youth protection into account</li>
+              <li>[x] Initial Version 1.0 (thoroughly tested)</li>
+              <li>[x] Uses OpenAI infrastructure for speech-to-text (STT), large language model (LLM), and text-to-speech (TTS)</li>
+              <li>[x] Uses Docker for a reproducible and generic system platform</li>
+              <li>[x] Simple Python and D3.js code with good documentation</li>
+              <li>[x] Developed as Open Source under GPLv3</li>
+          </ul>
+      </div>
+    </a>
+
+    <!-- disclaimer By Nokkela -->
+    <div id="llm-disclaimer">
+      <small>
+        Disclaimer: Large language models may hallucinate or make incorrect statements and are not a substitute for professional medical, psychological, or other domain-expert advice. The system prompts are provided only to assist in these areas.
+      </small>
+    </div>
+
+  <!-- END -->
+</body>
+</html>

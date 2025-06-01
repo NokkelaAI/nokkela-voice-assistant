@@ -1,0 +1,184 @@
+/*
+# Copyright (C) 2025 Nokkela.AI
+#
+# This file is part of Nokkela Voice Assistant (NVA)
+#
+# Nokkela Voice Assistant (NVA) is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# Nokkela Voice Assistant (NVA) is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Nokkela Voice Assistant (NVA). If not, see https://www.gnu.org/licenses/.
+*/
+
+/* Basic styling for the entire page */
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+}
+
+/* Styling for the settings section (model and prompt selection) */
+#settings {
+    padding: 10px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Utility class to hide elements */
+.hidden {
+    display: none;
+}
+
+/* Prompt image container at top-right */
+#promptImageContainer {
+    position: absolute;
+    top: 0px;
+    right: 540px;
+    width: 80px;
+    height: 80px;
+    z-index: -1;
+}
+#promptImageContainer img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+/* Styling for the recording controls area */
+#recordingControls {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Styling for the container that holds the D3.js cloud visualization */
+#cloud-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 300px; /* Reserve space for the chat history */
+    overflow: hidden;
+}
+
+/* check secure connection bubble */
+#insecure-bubble {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #c00;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    z-index: 1000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+#insecure-bubble.hidden {
+    display: none;
+}
+
+/* Styling for the chat history area */
+#chat-history {
+    width: 500px;
+    border-left: 1px solid #ccc;
+    padding: 20px;
+    overflow-y: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+/* Tooltip for server info on hover over Version */
+#version {
+    position: relative;
+    display: inline-block;
+    overflow: visible;
+}
+
+.tooltip-content {
+    display: none;
+    position: absolute;
+    bottom: 120%;           /* position above the text */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0,0,0,0.85);
+    color: #fff;
+    text-align: left;
+    padding: 10px;
+    border-radius: 4px;
+    white-space: normal;
+    z-index: 1000;
+    font-size: 10px;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.tooltip-content p {
+    margin: 6px 0;
+}
+.tooltip-content h4 {
+    margin: 8px 0 4px;
+    font-size: 12px;
+    text-decoration: underline;
+}
+.tooltip-content ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+}
+.tooltip-content ul li {
+    margin-bottom: 4px;
+    list-style: none;
+}
+
+#version:hover .tooltip-content {
+  display: block;
+}
+
+/* Styling for individual chat bubbles */
+.chat-bubble {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+/* Styling for user messages */
+.user-message {
+    background-color: #d1dde7;
+    align-self: flex-end;
+}
+
+/* Styling for „Thinking“-Bubble */
+.think-message {
+    background-color: #fff9c4;
+    align-self: flex-start;
+}
+
+/* Styling for bot messages */
+.bot-message {
+    background-color: #f8d7da;
+    align-self: flex-start;
+}
+
+/* Disclaimer By Nokkela */
+#llm-disclaimer {
+    text-align: left;
+    margin-top: 8px;
+}
+#llm-disclaimer small {
+    font-size: 10px;
+    color: #3b3ea3;
+    line-height: 1.2;
+}
+
