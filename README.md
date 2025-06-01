@@ -92,7 +92,8 @@ The NVA continuously provides the web service with SSL/TLS encryption – both f
 - [ ] Full Support for Mobile Devices (Apple iOS / Android) - workarounds are necessary due to various system limitations
 - [ ] Supports fragmented object processing, resulting in shorter response times and a more natural flow of speech without having to wait for the complete TTS processing
 - [ ] Support for OpenAI Realtime API
-- [x] Version 2.4.1 - Add Support for (Remote) Ollama "DeepSeek-R1-0528-Qwen3-8B" Reasoning Model (LLM) and "Gemma3-27B" Model (LLM)
+- [x] Version 2.4.2 - Support for (Remote) Ollama "Gemma3-27B" (Reasoning) Model (LLM)
+- [x] Version 2.4.1 - Support for (Remote) Ollama "DeepSeek-R1-0528-Qwen3-8B" Reasoning Model (LLM)
 - [x] Version 2.4 - Add SystemPrompt "StoryTeller"
 - [x] Support for (Remote) Ollama "DeepSeek-R1-671B" Reasoning Model (LLM)
 - [x] Version 2.3 - Add SystemPrompt Images

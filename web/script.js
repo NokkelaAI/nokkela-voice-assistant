@@ -192,7 +192,7 @@ document.getElementById('modelSelect').addEventListener('change', function(){
    }
    // toggle Hide Reasoning for any reasoning model
    const hideReasoningContainer = document.getElementById('hideReasoningContainer');
-   if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq'].includes(this.value)) {
+   if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b'].includes(this.value)) {
        hideReasoningContainer.classList.remove('hidden');
    } else {
        hideReasoningContainer.classList.add('hidden');
@@ -542,7 +542,7 @@ async function sendText(text) {
 
     // Handle "Hide Reasoning" for any reasoning model
     let botMessage = data.response;
-    if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq'].includes(document.getElementById('modelSelect').value) &&
+    if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b'].includes(document.getElementById('modelSelect').value) &&
         document.getElementById('hideReasoningToggle').checked) {
       botMessage = botMessage
         // strip out <think>…</think> blocks
@@ -802,7 +802,7 @@ async function sendAudio(audioBlob, speaker = '', language = '') {
        const botMessage = data.response;
        // prepare TTS text, stripping <think>…</think> if hideReasoning is enabled
        let ttsText = botMessage;
-       if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq'].includes(document.getElementById('modelSelect').value)
+       if (['qwen3:235b', 'qwen3:32b', 'qwen3:30b', 'deepseek-r1:671b', 'deepseek-r1:8b', 'qwq', 'gemma3:27b'].includes(document.getElementById('modelSelect').value)
            && !document.getElementById('hideReasoningContainer').classList.contains('hidden')
            && document.getElementById('hideReasoningToggle').checked) {
            ttsText = botMessage
