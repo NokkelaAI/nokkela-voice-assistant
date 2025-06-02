@@ -14,7 +14,7 @@
 # Nokkela Voice Assistant (NVA). If not, see https://www.gnu.org/licenses/.
 
 # Use an official Python runtime as a parent image
-FROM python:3.10.17-slim
+FROM python:3.13.3-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
