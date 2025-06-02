@@ -151,6 +151,10 @@ While the underlying model was trained on 98 languages, we only list the languag
 
 ![Example1](web/images/example_1.png)
 
+# Webinterface (Version 2.4.4)
+
+![Example2](web/images/example_2.png)
+
 # Requirements
 
 * Linux, Mac or Windows with Docker
