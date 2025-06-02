@@ -14,7 +14,13 @@
 # Nokkela Voice Assistant (NVA). If not, see https://www.gnu.org/licenses/.
 
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.10.17-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Base Image Updates & Security fixes
+RUN apt-get update -qq -y
+RUN apt-get upgrade -qq -y
 
 # Update package list and install ssl-cert to get the snakeoil certificates
 RUN apt-get update && apt-get install -y ssl-cert && rm -rf /var/lib/apt/lists/*
