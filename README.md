@@ -274,7 +274,7 @@ docker run \
        ghcr.io/speaches-ai/speaches:latest-cuda
 ```
 
-### Python (Dummy) Container for downloading the model
+### Python (Dummy) Container for downloading the (STT) model
 
 * https://speaches.ai/installation/
 * https://speaches.ai/usage/speech-to-text/
@@ -582,10 +582,38 @@ docker run \
   --detach \
   --publish 8000:8000 \
   --name speaches \
-  --volume hf-hub-cache:/home/ubuntu/.cache/huggingface/hub \
+  --volume /opt/hf-hub-cache:/home/ubuntu/.cache/huggingface/hub \
   --gpus=all \
   ghcr.io/speaches-ai/speaches:latest-cuda
 ```
+
+### Python (Dummy) Container for downloading the (TTS) model
+
+* https://speaches.ai/installation/
+* https://speaches.ai/usage/text-to-speech/
+
+```shell
+docker run -it python:3.12 bash
+
+apt-get update
+apt-get install -y jq
+pip install uv
+
+git clone https://github.com/speaches-ai/speaches.git
+cd speaches 
+uv venv
+source .venv/bin/activate
+uv sync --all-extras
+
+export SPEACHES_BASE_URL="http://YOUR-SERVER-IP:8000"
+
+uvx speaches-cli registry ls --task text-to-speech | jq '.data[] | .id' > DATA_TTS
+grep "Kokoro" DATA_TTS
+uvx speaches-cli model download speaches-ai/Kokoro-82M-v1.0-ONNX
+uvx speaches-cli model ls --task text-to-speech | jq '.data | map(select(.id == "speaches-ai/Kokoro-82M-v1.0-ONNX"))'
+
+exit
+``` 
 
 ### NVA: Docker ENV
 
