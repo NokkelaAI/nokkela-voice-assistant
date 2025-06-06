@@ -293,9 +293,9 @@ docker run \
 
 # Artificial Analysis Intelligence Index (20250606)
 
-## Source: https://artificialanalysis.ai/
+## Choose the right model for you.
 
-### Choose the right model for you.
+### Source: https://github.com/NokkelaAI/artificial-analysis-intelligence-index/
 
 ![AAII](web/images/artificial_analysis_intelligence_index_20250606.png)
 
