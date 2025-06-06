@@ -291,6 +291,14 @@ docker run \
        nokkela-voice-assistant
 ```
 
+# Artificial Analysis Intelligence Index (20250606)
+
+## Source: https://artificialanalysis.ai/
+
+### Choose the right model for you.
+
+![AAII](web/images/artificial_analysis_intelligence_index_20250606.png)
+
 ## (Remote) Ollama: "Llama3.3-70B" Model Support
 
 ### Example Service URL
