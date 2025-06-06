@@ -264,7 +264,6 @@ appuser@4cfe3eaa2f2f:/app/data$
 
 ### (Whisper)STT Service: speaches.ai
 
-
 ```shell
 docker run \
        --detach \
@@ -273,6 +272,34 @@ docker run \
        --volume /opt/hf-hub-cache:/home/ubuntu/.cache/huggingface/hub \
        --gpus=all \
        ghcr.io/speaches-ai/speaches:latest-cuda
+```
+
+### Python (Dummy) Container for downloading the model
+
+* https://speaches.ai/installation/
+* https://speaches.ai/usage/speech-to-text/
+
+```shell
+docker run -it python:3.12 bash
+
+apt-get update
+apt-get install -y jq
+pip install uv
+
+git clone https://github.com/speaches-ai/speaches.git
+cd speaches
+uv venv
+source .venv/bin/activate
+uv sync --all-extras
+
+export SPEACHES_BASE_URL="http://YOUR-SERVER-IP:8000"
+
+uvx speaches-cli registry ls --task automatic-speech-recognition | jq '.data' > DATA
+grep "whisper-large-v3" DATA
+uvx speaches-cli model download Systran/faster-whisper-large-v3
+uvx speaches-cli model ls --task automatic-speech-recognition | jq '.data' | grep "faster-whisper-large-v3"
+
+exit
 ```
 
 ### NVA: Docker ENVs
