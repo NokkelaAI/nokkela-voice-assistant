@@ -148,13 +148,13 @@ Afrikaans, Arabic, Armenian, Azerbaijani, Belarusian, Bosnian, Bulgarian, Catala
 
 While the underlying model was trained on 98 languages, we only list the languages that exceeded <50% word error rate (WER) which is an industry standard benchmark for speech to text model accuracy. The model will return results for languages not listed above but the quality will be low.
 
-# Webinterface (Version 1.0)
-
-![Example1](web/images/example_1.png)
-
 # Webinterface (Version 2.4.4)
 
 ![Example2](web/images/example_2.png)
+
+# Webinterface (Version 2.5)
+
+![Example3](web/images/example_3.png)
 
 # Requirements
 
