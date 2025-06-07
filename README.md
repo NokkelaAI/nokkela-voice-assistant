@@ -255,7 +255,7 @@ appuser@4cfe3eaa2f2f:/app/data$ cat voice.log
 appuser@4cfe3eaa2f2f:/app/data$
 ```
 
-## (Remote) (Whisper)STT "Speech-to-Text" (Selfhosted)
+## Selfhosted: (Remote) (Whisper)STT "Speech-to-Text"
 
 ![WhisperSTT](web/images/nva_ollama_whisperstt.png)
 
@@ -362,7 +362,7 @@ http://YOUR-SERVER-IP:11434/v1/chat/completions
 http://YOUR-SERVER-IP:11434/v1/chat/completions
 ```
 
-## (Remote) Ollama Docker Service (Selfhosted)
+## Selfhosted: (Remote) Ollama Docker Service
 
 ![Ollama](web/images/nva_ollama.png)
 
@@ -427,7 +427,7 @@ ollama run cogito:70b
 http://host.docker.internal:11434/v1/chat/completions
 ```
 
-## (Local) Ollama Docker Service (Selfhosted)
+## Selfhosted: (Local) Ollama Docker Service
 
 ![Ollama-Local](web/images/nva_ollama_local.png)
 
@@ -454,7 +454,7 @@ ollama run cogito:8b
 ollama run cogito:3b
 ```
 
-## (Remote) (X)TTS "Text-to-Speech" (Selfhosted)
+## Selfhosted: (Remote) (X)TTS "Text-to-Speech"
 
 ![XTTS](web/images/nva_ollama_xtts.png)
 

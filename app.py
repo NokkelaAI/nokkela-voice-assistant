@@ -328,7 +328,7 @@ def tts():
         system_logger.error(f'Error in /tts: {e}')
         return jsonify({'error': 'Internal server error at TTS'}), 500
 
-# Input Text
+# (Silent) Input Text
 @app.route('/chat', methods=['POST'])
 @auth.login_required
 def chat():
