@@ -25,10 +25,11 @@ document.body.addEventListener('touchend', () => {
 }, { once: true });
 
 // === Session ID for context (persisted in localStorage) ===
-let sessionId = localStorage.getItem('sessionId');
+// Use sessionStorage so each tab has its own history
+let sessionId = sessionStorage.getItem('sessionId');
 if (!sessionId && window.crypto && crypto.randomUUID) {
   sessionId = crypto.randomUUID();
-  localStorage.setItem('sessionId', sessionId);
+  sessionStorage.setItem('sessionId', sessionId);
 }
 
 // Track current audio playback so we can stop it
@@ -418,15 +419,15 @@ function updateRecordingControls() {
 // Update recording controls when the system prompt selection changes.
 // On system-prompt change: reset session then update controls
 document.getElementById('systemPromptSelect').addEventListener('change', () => {
-  // Clear stored session ID to start fresh
-  localStorage.removeItem('sessionId');
+  // Clear stored session ID to start fresh (per-tab)
+  sessionStorage.removeItem('sessionId');
   // Clear UI chat history
   const chatHistory = document.getElementById('chat-history');
   if (chatHistory) chatHistory.innerHTML = '';
   // Generate and persist new session ID
   if (window.crypto && crypto.randomUUID) {
     sessionId = crypto.randomUUID();
-    localStorage.setItem('sessionId', sessionId);
+    sessionStorage.setItem('sessionId', sessionId);
   }
   // Finally update the recording controls for the new prompt
   updateRecordingControls();
@@ -458,15 +459,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const resetBtn = document.getElementById('resetSessionButton');
   if (!resetBtn) return;
   resetBtn.addEventListener('click', () => {
-    // Remove stored session ID to force new conversation
-    localStorage.removeItem('sessionId');
+    // Remove stored session ID to force new conversation (per-tab)
+    sessionStorage.removeItem('sessionId');
     // Clear chat history UI
     const chatHistory = document.getElementById('chat-history');
     if (chatHistory) chatHistory.innerHTML = '';
     // Generate and store a fresh sessionId for subsequent requests
     if (window.crypto && crypto.randomUUID) {
       sessionId = crypto.randomUUID();
-      localStorage.setItem('sessionId', sessionId);
+      sessionStorage.setItem('sessionId', sessionId);
     }
    // Initialize prompt image
    updatePromptImage();
