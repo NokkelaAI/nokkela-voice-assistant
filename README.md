@@ -272,6 +272,7 @@ docker run \
        --name speaches \
        --volume /opt/hf-hub-cache:/home/ubuntu/.cache/huggingface/hub \
        --gpus=all \
+       -e WHISPER__TTL=-1 \
        ghcr.io/speaches-ai/speaches:latest-cuda
 ```
 
@@ -580,12 +581,13 @@ English, Spanish, French, German, Italian, Portuguese, Polish, Turkish, Russian,
 
 ```shell
 docker run \
-  --detach \
-  --publish 8000:8000 \
-  --name speaches \
-  --volume /opt/hf-hub-cache:/home/ubuntu/.cache/huggingface/hub \
-  --gpus=all \
-  ghcr.io/speaches-ai/speaches:latest-cuda
+       --detach \
+       --publish 8000:8000 \
+       --name speaches \
+       --volume /opt/hf-hub-cache:/home/ubuntu/.cache/huggingface/hub \
+       --gpus=all \
+       -e WHISPER__TTL=-1 \
+       ghcr.io/speaches-ai/speaches:latest-cuda
 ```
 
 ### Python (Dummy) Container for downloading the (TTS) model
