@@ -226,6 +226,8 @@ sed -i '.bak' 's/YOUR-API-KEY/sk-XXXXXXXXX/g' docker_build_and_run.sh
 
 ## Docker
 
+![Docker](web/images/docker.png)
+
 For debugging purposes or for future analyses, log files are automatically stored under /app/data.
 To access this data, a Docker volume mapping can be used.
 
