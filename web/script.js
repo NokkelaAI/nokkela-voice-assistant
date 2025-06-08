@@ -61,116 +61,97 @@ function updatePromptImage() {
 }
 
 // ---------------------------
-// D3.js Visualization Section
+// Three.js WebGL Blob Visualization
 // ---------------------------
 
-// Initializes the D3 visualization by creating an SVG element and defining gradients for the blob.
-function initVisualization() {
-    const width = 600;
-    const height = 600;
+// 1) Create scene, camera, renderer
+const scene  = new THREE.Scene();                                            // Scene container
+const camera = new THREE.PerspectiveCamera(75, 600/600, 0.1, 1000);          // Perspective camera
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });  // Transparent bg
+renderer.setSize(600, 600);                                                  // Canvas size
+document.getElementById('cloud-container').appendChild(renderer.domElement); // Attach canvas
 
-    // Append an SVG container to the 'cloud-container' div
-    const svg = d3.select('#cloud-container').append('svg')
-        .attr('width', width)
-        .attr('height', height);
+// 2) Build a smooth blob mesh directly as BufferGeometry
+const geometry = new THREE.IcosahedronGeometry(150, 5);                      // High-detail base (already BufferGeometry)
+const material = new THREE.MeshStandardMaterial({                            // Soft shaded material
+  color:     0xff99cc,
+  emissive:  0x330033,
+  roughness: 0.5,
+  metalness: 0.1
+});
+const blobMesh = new THREE.Mesh(geometry, material);
+scene.add(blobMesh);                                                         // Add to scene
 
-    // Append definitions for gradients
-    const defs = svg.append('defs');
+// initialize SimplexNoise instance for smooth noise
+const noise = new SimplexNoise();                                            // L78
 
-    // Define the main radial gradient for the blob (normal state)
-    const gradient = defs.append('radialGradient')
-        .attr('id', 'blobGradient')
-        .attr('cx', '50%')
-        .attr('cy', '50%')
-        .attr('r', '50%');
-    gradient.append('stop').attr('offset', '0%').attr('stop-color', '#FF99CC');
-    gradient.append('stop').attr('offset', '50%').attr('stop-color', '#9933FF');
-    gradient.append('stop').attr('offset', '100%').attr('stop-color', '#0066FF');
+// 3) Add soft lighting
+const light   = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(1, 1, 1).normalize();
+scene.add(light);
+const ambient = new THREE.AmbientLight(0x444444);
+scene.add(ambient);
+camera.position.z = 400;                                                     // Position camera
 
-    // Define an inverted gradient for the "speaking" state
-    const invertedGradient = defs.append('radialGradient')
-        .attr('id', 'blobGradientInverted')
-        .attr('cx', '50%')
-        .attr('cy', '50%')
-        .attr('r', '50%');
-    invertedGradient.append('stop').attr('offset', '0%').attr('stop-color', '#0066FF');
-    invertedGradient.append('stop').attr('offset', '50%').attr('stop-color', '#9933FF');
-    invertedGradient.append('stop').attr('offset', '100%').attr('stop-color', '#FF99CC');
+// ---------------------------
+// State-based color targets
+// ---------------------------
+const stateColors = {
+  speaking:  { color: 0xff99cc, emissive: 0x330033 }, // speaking state
+  listening: { color: 0x330033, emissive: 0x9933ff }, // listening state
+  thinking:  { color: 0x330033, emissive: 0xffcc33 }, // thinking state
+  idle:      { color: 0x330033, emissive: 0x0066ff }  // default gradient
+};
 
-    // Define an inverted gradient for the "thinking" state
-    const thinkingGradient = defs.append('radialGradient')
-        .attr('id', 'blobGradientThinking')
-        .attr('cx', '50%')
-        .attr('cy', '50%')
-        .attr('r', '50%');
-    thinkingGradient.append('stop').attr('offset', '0%').attr('stop-color', '#0066FF');
-    thinkingGradient.append('stop').attr('offset', '50%').attr('stop-color', '#9933FF');
-    thinkingGradient.append('stop').attr('offset', '100%').attr('stop-color', '#FFCC33');
+// initialize target color values
+let targetColor    = new THREE.Color(stateColors.idle.color);
+let targetEmissive = new THREE.Color(stateColors.idle.emissive);
 
-    // Create the blob path with a random, organic shape
-    const blob = svg.append('path')
-        .attr('d', generateBlobPath(width / 2, height / 2, 150))
-        .attr('fill', 'url(#blobGradient)')
-        .attr('opacity', 1);
-
-    // Store the blob element globally for later updates
-    window.blob = blob;
+// Function to update target colors smoothly
+function updateVisualization(state) {                                        // L90
+  const sc = stateColors[state] || stateColors.idle;
+  targetColor.setHex(sc.color);
+  targetEmissive.setHex(sc.emissive);
 }
 
-// Generates a random organic blob path using a cardinal closed curve.
-// cx, cy: center of the blob; radius: average radius; points: number of points along the edge.
-function generateBlobPath(cx, cy, radius) {
-    const points = 8;
-    const angleStep = (Math.PI * 2) / points;
-    const variation = radius * 0.3; // Maximum variation for randomness
-    const blobPoints = [];
-    for (let i = 0; i < points; i++) {
-        const angle = i * angleStep;
-        // Randomize the radius for organic shape variation
-        const r = radius + (Math.random() - 0.5) * variation;
-        const x = cx + r * Math.cos(angle);
-        const y = cy + r * Math.sin(angle);
-        blobPoints.push([x, y]);
-    }
-    // Generate a smooth closed path from the points
-    return d3.line().curve(d3.curveCardinalClosed.tension(0.5))(blobPoints);
-}
+// 4) Animation loop with smooth vertex noise & rotation
+function animate() {
+  requestAnimationFrame(animate);
+  const time = performance.now() * 0.001;
 
-// Updates the visualization based on the current state (listening, speaking, or idle).
-function updateVisualization(state) {
-    if (state === 'listening') {
-        animateBlob();
-        // Use the normal gradient for listening state
-        window.blob.attr('fill', 'url(#blobGradient)');
-    }
-    else if (state === 'thinking') {
-        animateBlob();
-        window.blob.attr('fill', 'url(#blobGradientThinking)');
-    }
-    else if (state === 'speaking') {
-        animateBlob();
-        // Use the inverted gradient for speaking state
-        window.blob.attr('fill', 'url(#blobGradientInverted)');
-    }
-    else {
-        // If state is idle, stop any ongoing animation and reset the blob appearance.
-        if (window.blobAnimation) window.blobAnimation.stop();
-        window.blob.attr('fill', 'url(#blobGradient)');
-    }
-}
+  // 4a) Smoothly displace via simplex noise on BufferGeometry positions
+  const posAttr = geometry.attributes.position;                              // L92
+  const vertex = new THREE.Vector3();                                        // reuse vector
+  for (let i = 0, l = posAttr.count; i < l; i++) {                           // L93
+    // read original position
+    vertex.set(
+      posAttr.getX(i),
+      posAttr.getY(i),
+      posAttr.getZ(i)
+    );
+    const normal = vertex.clone().normalize();                               // direction
+    // compute noise offset
+    const n = noise.noise4D(
+      vertex.x * 0.005,
+      vertex.y * 0.005,
+      vertex.z * 0.005,
+      time * 0.5
+    ) * 15;                                                                  // L101
+    // apply displacement
+    normal.multiplyScalar(150 + n);
+    posAttr.setXYZ(i, normal.x, normal.y, normal.z);                         // L105
+  }
+  posAttr.needsUpdate = true;                                                // L107
 
-// Animates the blob by periodically regenerating its path.
-function animateBlob() {
-    if (window.blobAnimation) window.blobAnimation.stop();
-    window.blobAnimation = d3.interval(() => {
-        window.blob.transition()
-            .duration(75)
-            .attr('d', generateBlobPath(300, 300, 150));
-    }, 75);
-}
+  blobMesh.rotation.y += 0.003;                                              // gentle overall rotation
 
-// Initialize the visualization when the script loads.
-initVisualization();
+  // smoothly interpolate material colors toward targets
+  material.color.lerp(targetColor, 0.05);                                    // smooth color transition
+  material.emissive.lerp(targetEmissive, 0.05);                              // smooth emissive transition
+
+  renderer.render(scene, camera);                                            // render current frame
+}
+animate();                                                                   // start the loop
 
 // ---------------------------
 // Recording Controls & API Handling Section
