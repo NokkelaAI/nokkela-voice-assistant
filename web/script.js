@@ -61,97 +61,138 @@ function updatePromptImage() {
 }
 
 // ---------------------------
-// Three.js WebGL Blob Visualization
+// Wobbly Blob filled with Metallic Spheres
 // ---------------------------
 
-// 1) Create scene, camera, renderer
-const scene  = new THREE.Scene();                                            // Scene container
-const camera = new THREE.PerspectiveCamera(75, 600/600, 0.1, 1000);          // Perspective camera
-const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });  // Transparent bg
-renderer.setSize(600, 600);                                                  // Canvas size
-document.getElementById('cloud-container').appendChild(renderer.domElement); // Attach canvas
+// 1) Scene, camera, renderer setup
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(75, 600 / 600, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(600, 600);
+document.getElementById('cloud-container').appendChild(renderer.domElement);
+camera.position.z = 400;
 
-// 2) Build a smooth blob mesh directly as BufferGeometry
-const geometry = new THREE.IcosahedronGeometry(150, 5);                      // High-detail base (already BufferGeometry)
-const material = new THREE.MeshStandardMaterial({                            // Soft shaded material
-  color:     0xff99cc,
-  emissive:  0x330033,
-  roughness: 0.5,
-  metalness: 0.1
+// 2) Blob hull parameters
+const HULL_RADIUS = 150;
+
+// 3) Precompute random directions & radii for uniform volume distribution
+const INSTANCE_COUNT = 6000;
+const directions     = new Array(INSTANCE_COUNT);
+const baseRadii      = new Array(INSTANCE_COUNT);
+
+for (let i = 0; i < INSTANCE_COUNT; i++) {
+  // sample a direction uniformly on the sphere
+  const u     = Math.random();
+  const theta = 2 * Math.PI * Math.random();
+  const phi   = Math.acos(2 * u - 1);
+  const dir   = new THREE.Vector3(
+    Math.sin(phi) * Math.cos(theta),
+    Math.sin(phi) * Math.sin(theta),
+    Math.cos(phi)
+  );
+  directions[i] = dir;
+  // sample radius with cube root for even volume fill
+  baseRadii[i]  = HULL_RADIUS * Math.cbrt(Math.random());
+}
+
+// 4) Create an InstancedMesh of small metallic spheres
+const sphereGeo = new THREE.SphereGeometry(2, 12, 12);
+const metalMat  = new THREE.MeshStandardMaterial({
+  metalness: 1.0,
+  roughness: 0.2,
+  color: new THREE.Color(0x888888)       // default "metal" color
 });
-const blobMesh = new THREE.Mesh(geometry, material);
-scene.add(blobMesh);                                                         // Add to scene
+const spheres = new THREE.InstancedMesh(sphereGeo, metalMat, INSTANCE_COUNT);
+scene.add(spheres);
 
-// initialize SimplexNoise instance for smooth noise
-const noise = new SimplexNoise();                                            // L78
+// 5) Lighting for metallic effect
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+dirLight.position.set(1, 1, 1);
+scene.add(dirLight);
+scene.add(new THREE.AmbientLight(0x222222));
 
-// 3) Add soft lighting
-const light   = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(1, 1, 1).normalize();
-scene.add(light);
-const ambient = new THREE.AmbientLight(0x444444);
-scene.add(ambient);
-camera.position.z = 400;                                                     // Position camera
+// 6) Noise generator and helper object for instances
+const noise = new SimplexNoise();
+const dummy = new THREE.Object3D();
 
-// ---------------------------
-// State-based color targets
-// ---------------------------
-const stateColors = {
-  speaking:  { color: 0xff99cc, emissive: 0x330033 }, // speaking state
-  listening: { color: 0x330033, emissive: 0x9933ff }, // listening state
-  thinking:  { color: 0x330033, emissive: 0xffcc33 }, // thinking state
-  idle:      { color: 0x330033, emissive: 0x0066ff }  // default gradient
+// 7) State-driven parameters (slower default, specific colors, larger "speaking" wobble)
+let vizParams = {
+  speed: 0.3,                            // calm wobble speed
+  amp:   20.0,                           // calm wobble amplitude
+  color: new THREE.Color(0x888888)
 };
 
-// initialize target color values
-let targetColor    = new THREE.Color(stateColors.idle.color);
-let targetEmissive = new THREE.Color(stateColors.idle.emissive);
-
-// Function to update target colors smoothly
-function updateVisualization(state) {                                        // L90
-  const sc = stateColors[state] || stateColors.idle;
-  targetColor.setHex(sc.color);
-  targetEmissive.setHex(sc.emissive);
+function updateVisualization(state) {
+  switch (state) {
+    case 'listening':
+      vizParams = {
+        speed: 0.5,
+        amp:   25.0,
+        color: new THREE.Color(0x0000ff) // blue
+      };
+      break;
+    case 'thinking':
+      vizParams = {
+        speed: 0.2,
+        amp:   15.0,
+        color: new THREE.Color(0xffff00) // yellow
+      };
+      break;
+    case 'speaking':
+      vizParams = {
+        speed: 0.7,
+        amp:   60.0,                     // much larger amplitude for speaking
+        color: new THREE.Color(0xff00ff) // pink
+      };
+      break;
+    default: // 'idle'
+      vizParams = {
+        speed: 0.3,
+        amp:   20.0,
+        color: new THREE.Color(0x888888) // metal
+      };
+  }
+  metalMat.color.copy(vizParams.color);
 }
 
-// 4) Animation loop with smooth vertex noise & rotation
+// initialize to idle state
+updateVisualization('idle');
+
+// 8) Animation loop: update each sphere's matrix per frame
 function animate() {
   requestAnimationFrame(animate);
-  const time = performance.now() * 0.001;
 
-  // 4a) Smoothly displace via simplex noise on BufferGeometry positions
-  const posAttr = geometry.attributes.position;                              // L92
-  const vertex = new THREE.Vector3();                                        // reuse vector
-  for (let i = 0, l = posAttr.count; i < l; i++) {                           // L93
-    // read original position
-    vertex.set(
-      posAttr.getX(i),
-      posAttr.getY(i),
-      posAttr.getZ(i)
-    );
-    const normal = vertex.clone().normalize();                               // direction
-    // compute noise offset
+  const t = performance.now() * 0.001 * vizParams.speed;
+
+  for (let i = 0; i < INSTANCE_COUNT; i++) {
+    const dir = directions[i];
+    const r0  = baseRadii[i];
+
+    // compute a 4D noise offset for wobble
     const n = noise.noise4D(
-      vertex.x * 0.005,
-      vertex.y * 0.005,
-      vertex.z * 0.005,
-      time * 0.5
-    ) * 15;                                                                  // L101
-    // apply displacement
-    normal.multiplyScalar(150 + n);
-    posAttr.setXYZ(i, normal.x, normal.y, normal.z);                         // L105
+      dir.x * r0 * 0.01,
+      dir.y * r0 * 0.01,
+      dir.z * r0 * 0.01,
+      t
+    ) * vizParams.amp;
+
+    // final position = direction * (base radius + wobble)
+    const pos = dir.clone().multiplyScalar(r0 + n);
+    dummy.position.copy(pos);
+
+    // scale spheres slightly based on wobble
+    const scale = 1 + (n * 0.01);
+    dummy.scale.set(scale, scale, scale);
+
+    dummy.updateMatrix();
+    spheres.setMatrixAt(i, dummy.matrix);
   }
-  posAttr.needsUpdate = true;                                                // L107
 
-  blobMesh.rotation.y += 0.003;                                              // gentle overall rotation
-
-  // smoothly interpolate material colors toward targets
-  material.color.lerp(targetColor, 0.05);                                    // smooth color transition
-  material.emissive.lerp(targetEmissive, 0.05);                              // smooth emissive transition
-
-  renderer.render(scene, camera);                                            // render current frame
+  spheres.instanceMatrix.needsUpdate = true;
+  renderer.render(scene, camera);
 }
-animate();                                                                   // start the loop
+
+animate();
 
 // ---------------------------
 // Recording Controls & API Handling Section
