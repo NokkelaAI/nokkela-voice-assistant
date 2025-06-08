@@ -26,7 +26,7 @@ RUN apt-get upgrade -qq -y
 RUN apt-get update && apt-get install -y ssl-cert && rm -rf /var/lib/apt/lists/*
 
 # Support for WebGL (Part 1-2)
-RUN apt-get update && apt-get install -y libjs-three npm && rm -rf /var/lib/apt/lists/*
+# OFF # RUN apt-get update && apt-get install -y libjs-three npm && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory to /app
 WORKDIR /app
@@ -47,8 +47,8 @@ RUN chown -R appuser /app
 USER appuser
 
 # Support for WebGL (Part 2-2)
-RUN npm install simplex-noise
-RUN cp /usr/share/nodejs/three/build/three.min.js /app/web
+# OFF # RUN npm install simplex-noise
+# OFF # RUN cp /usr/share/nodejs/three/build/three.min.js /app/web
 
 # Expose ports for HTTP (10001) and HTTPS (20001)
 EXPOSE 10001
