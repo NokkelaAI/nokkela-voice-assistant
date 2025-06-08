@@ -76,12 +76,12 @@ camera.position.z = 400;
 const HULL_RADIUS = 150;
 
 // 3) Precompute random directions & radii for uniform volume distribution
-const INSTANCE_COUNT = 6000;
+const INSTANCE_COUNT = 8000;
 const directions     = new Array(INSTANCE_COUNT);
 const baseRadii      = new Array(INSTANCE_COUNT);
 
 for (let i = 0; i < INSTANCE_COUNT; i++) {
-  // sample a direction uniformly on the sphere
+  // uniformly sample a direction on the sphere
   const u     = Math.random();
   const theta = 2 * Math.PI * Math.random();
   const phi   = Math.acos(2 * u - 1);
@@ -100,7 +100,7 @@ const sphereGeo = new THREE.SphereGeometry(2, 12, 12);
 const metalMat  = new THREE.MeshStandardMaterial({
   metalness: 1.0,
   roughness: 0.2,
-  color: new THREE.Color(0x888888)       // default "metal" color
+  color: new THREE.Color(0x88ccff)               // default light blue
 });
 const spheres = new THREE.InstancedMesh(sphereGeo, metalMat, INSTANCE_COUNT);
 scene.add(spheres);
@@ -114,42 +114,63 @@ scene.add(new THREE.AmbientLight(0x222222));
 // 6) Noise generator and helper object for instances
 const noise = new SimplexNoise();
 const dummy = new THREE.Object3D();
+const up    = new THREE.Vector3(0, 1, 0);        // for oscillation axis
 
-// 7) State-driven parameters (slower default, specific colors, larger "speaking" wobble)
+// 7) State-driven parameters (including oscillAmp for sphere sway)
 let vizParams = {
-  speed: 0.3,                            // calm wobble speed
-  amp:   20.0,                           // calm wobble amplitude
-  color: new THREE.Color(0x888888)
+  speed:        0.3,                             // calm wobble speed
+  amp:          20.0,                            // calm wobble amplitude
+  color:        new THREE.Color(0x88ccff),
+  horizStretch: 1.0,                             // no stretch by default
+  vertStretch:  1.0,
+  rotateSpeed:  0.0,                             // no global rotation by default
+  oscillAmp:    0.0                              // no sphere sway by default
 };
 
 function updateVisualization(state) {
   switch (state) {
     case 'listening':
       vizParams = {
-        speed: 0.5,
-        amp:   25.0,
-        color: new THREE.Color(0x0000ff) // blue
+        speed:        0.5,
+        amp:          25.0,
+        color:        new THREE.Color(0xccf5ff), // very light blue
+        horizStretch: 1.0,
+        vertStretch:  1.0,
+        rotateSpeed:  0.0,
+        oscillAmp:    0.0
       };
       break;
     case 'thinking':
       vizParams = {
-        speed: 0.2,
-        amp:   15.0,
-        color: new THREE.Color(0xffff00) // yellow
+        speed:        0.2,
+        amp:          15.0,
+        color:        new THREE.Color(0xffcc33), // yellow/orange
+        horizStretch: 1.0,                       // no horizontal stretch
+        vertStretch:  1.0,                       // no vertical stretch
+        rotateSpeed:  0.0,                       // no global rotation
+        oscillAmp:    5.0                        // small sphere sway
       };
       break;
     case 'speaking':
       vizParams = {
-        speed: 0.7,
-        amp:   60.0,                     // much larger amplitude for speaking
-        color: new THREE.Color(0xff00ff) // pink
+        speed:        0.7,
+        amp:          60.0,
+        color:        new THREE.Color(0x33ff66), // light green
+        horizStretch: 1.0,
+        vertStretch:  1.0,
+        rotateSpeed:  0.0,
+        oscillAmp:    0.0
       };
       break;
-    default: // 'idle'
+    default:                                     // 'idle'
       vizParams = {
-        speed: 0.3,
-        amp:   20.0,
-        color: new THREE.Color(0x888888) // metal
+        speed:        0.3,
+        amp:          20.0,
+        color:        new THREE.Color(0x88ccff), // light blue
+        horizStretch: 1.0,
+        vertStretch:  1.0,
+        rotateSpeed:  0.0,
+        oscillAmp:    0.0
       };
   }
   metalMat.color.copy(vizParams.color);
@@ -176,8 +197,21 @@ function animate() {
       t
     ) * vizParams.amp;
 
-    // final position = direction * (base radius + wobble)
-    const pos = dir.clone().multiplyScalar(r0 + n);
+    // base position = direction * (base radius + wobble)
+    let pos = dir.clone().multiplyScalar(r0 + n);
+
+    // apply horizontal & vertical stretch
+    pos.x *= vizParams.horizStretch;
+    pos.y *= vizParams.vertStretch;
+
+    // apply per-sphere sway if configured
+    if (vizParams.oscillAmp > 0) {
+      // compute tangent vector for sway
+      const tangent = dir.clone().cross(up).normalize();
+      const sway    = Math.sin(t * 10 + i) * vizParams.oscillAmp;
+      pos.add(tangent.multiplyScalar(sway));
+    }
+
     dummy.position.copy(pos);
 
     // scale spheres slightly based on wobble
