@@ -178,8 +178,11 @@ docker pull nokkela/nokkela-voice-assistant:2.5.2-webgl-metal-blob
 
 # Requirements
 
-* Linux, Mac or Windows with Docker
-* Google Chrome Browser
+- Linux, Mac or Windows with Docker
+- Google Chrome Browser
+
+- Very old systems (over 10 years old) can also use the less compute-intensive "Classic" version:
+  - [Webinterface Version 2.5.2 Classic Blob](https://github.com/NokkelaAI/nokkela-voice-assistant?tab=readme-ov-file#webinterface-version-252-classic-blob)
 
 # Get Started (pull and run)
 
@@ -341,9 +344,12 @@ docker run \
 
 ## Select the model that best fits your needs!
 
-* Cloud: ChatGPT-o4-mini
-* Server: Qwen3-32B
-* Edge / Local: Gemma3-4B
+- Cloud:
+  - ChatGPT-o4-mini (recommended)
+- Server:
+  - Qwen3-32B (recommended)
+- Edge / Local:
+  - Gemma3-4B (recommended)
 
 ### Source: https://github.com/NokkelaAI/artificial-analysis-intelligence-index/
 
