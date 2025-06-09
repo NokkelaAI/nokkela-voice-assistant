@@ -92,6 +92,7 @@ The NVA continuously provides the web service with SSL/TLS encryption – both f
 - [ ] Full Support for Mobile Devices (Apple iOS / Android) - workarounds are necessary due to various system limitations
 - [ ] Supports fragmented object processing, resulting in shorter response times and a more natural flow of speech without having to wait for the complete TTS processing
 - [ ] Support for OpenAI Realtime API
+- [x] Version 2.5.4 - Support for "ChatGPT-4o-search-preview" Model
 - [x] Version 2.5.3 - Classic Blob (D3.js) replaced by Metal Blobs (WebGL Three.js)
 - [x] Version 2.5.2 - Use sessionStorage so each tab has its own history
 - [x] Version 2.5.1 - Model Recommendation: [Artificial Analysis Intelligence Index](https://github.com/NokkelaAI/artificial-analysis-intelligence-index/)
@@ -339,6 +340,10 @@ docker run \
 # Artificial Analysis Intelligence Index (20250606)
 
 ## Select the model that best fits your needs!
+
+* Cloud: ChatGPT-o4-mini
+* Server: Qwen3-32B
+* Edge / Local: Gemma3-4B
 
 ### Source: https://github.com/NokkelaAI/artificial-analysis-intelligence-index/
 
