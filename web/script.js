@@ -61,116 +61,172 @@ function updatePromptImage() {
 }
 
 // ---------------------------
-// D3.js Visualization Section
+// Wobbly Blob filled with Metallic Spheres
 // ---------------------------
 
-// Initializes the D3 visualization by creating an SVG element and defining gradients for the blob.
-function initVisualization() {
-    const width = 600;
-    const height = 600;
+// 1) Scene, camera, renderer setup
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(75, 600 / 600, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(600, 600);
+document.getElementById('cloud-container').appendChild(renderer.domElement);
+camera.position.z = 400;
 
-    // Append an SVG container to the 'cloud-container' div
-    const svg = d3.select('#cloud-container').append('svg')
-        .attr('width', width)
-        .attr('height', height);
+// 2) Blob hull parameters
+const HULL_RADIUS = 150;
 
-    // Append definitions for gradients
-    const defs = svg.append('defs');
+// 3) Precompute random directions & radii for uniform volume distribution
+const INSTANCE_COUNT = 8000;
+const directions     = new Array(INSTANCE_COUNT);
+const baseRadii      = new Array(INSTANCE_COUNT);
 
-    // Define the main radial gradient for the blob (normal state)
-    const gradient = defs.append('radialGradient')
-        .attr('id', 'blobGradient')
-        .attr('cx', '50%')
-        .attr('cy', '50%')
-        .attr('r', '50%');
-    gradient.append('stop').attr('offset', '0%').attr('stop-color', '#FF99CC');
-    gradient.append('stop').attr('offset', '50%').attr('stop-color', '#9933FF');
-    gradient.append('stop').attr('offset', '100%').attr('stop-color', '#0066FF');
-
-    // Define an inverted gradient for the "speaking" state
-    const invertedGradient = defs.append('radialGradient')
-        .attr('id', 'blobGradientInverted')
-        .attr('cx', '50%')
-        .attr('cy', '50%')
-        .attr('r', '50%');
-    invertedGradient.append('stop').attr('offset', '0%').attr('stop-color', '#0066FF');
-    invertedGradient.append('stop').attr('offset', '50%').attr('stop-color', '#9933FF');
-    invertedGradient.append('stop').attr('offset', '100%').attr('stop-color', '#FF99CC');
-
-    // Define an inverted gradient for the "thinking" state
-    const thinkingGradient = defs.append('radialGradient')
-        .attr('id', 'blobGradientThinking')
-        .attr('cx', '50%')
-        .attr('cy', '50%')
-        .attr('r', '50%');
-    thinkingGradient.append('stop').attr('offset', '0%').attr('stop-color', '#0066FF');
-    thinkingGradient.append('stop').attr('offset', '50%').attr('stop-color', '#9933FF');
-    thinkingGradient.append('stop').attr('offset', '100%').attr('stop-color', '#FFCC33');
-
-    // Create the blob path with a random, organic shape
-    const blob = svg.append('path')
-        .attr('d', generateBlobPath(width / 2, height / 2, 150))
-        .attr('fill', 'url(#blobGradient)')
-        .attr('opacity', 1);
-
-    // Store the blob element globally for later updates
-    window.blob = blob;
+for (let i = 0; i < INSTANCE_COUNT; i++) {
+  // uniformly sample a direction on the sphere
+  const u     = Math.random();
+  const theta = 2 * Math.PI * Math.random();
+  const phi   = Math.acos(2 * u - 1);
+  const dir   = new THREE.Vector3(
+    Math.sin(phi) * Math.cos(theta),
+    Math.sin(phi) * Math.sin(theta),
+    Math.cos(phi)
+  );
+  directions[i] = dir;
+  // sample radius with cube root for even volume fill
+  baseRadii[i]  = HULL_RADIUS * Math.cbrt(Math.random());
 }
 
-// Generates a random organic blob path using a cardinal closed curve.
-// cx, cy: center of the blob; radius: average radius; points: number of points along the edge.
-function generateBlobPath(cx, cy, radius) {
-    const points = 8;
-    const angleStep = (Math.PI * 2) / points;
-    const variation = radius * 0.3; // Maximum variation for randomness
-    const blobPoints = [];
-    for (let i = 0; i < points; i++) {
-        const angle = i * angleStep;
-        // Randomize the radius for organic shape variation
-        const r = radius + (Math.random() - 0.5) * variation;
-        const x = cx + r * Math.cos(angle);
-        const y = cy + r * Math.sin(angle);
-        blobPoints.push([x, y]);
-    }
-    // Generate a smooth closed path from the points
-    return d3.line().curve(d3.curveCardinalClosed.tension(0.5))(blobPoints);
-}
+// 4) Create an InstancedMesh of small metallic spheres
+const sphereGeo = new THREE.SphereGeometry(2, 12, 12);
+const metalMat  = new THREE.MeshStandardMaterial({
+  metalness: 1.0,
+  roughness: 0.2,
+  color: new THREE.Color(0x88ccff)               // default light blue
+});
+const spheres = new THREE.InstancedMesh(sphereGeo, metalMat, INSTANCE_COUNT);
+scene.add(spheres);
 
-// Updates the visualization based on the current state (listening, speaking, or idle).
+// 5) Lighting for metallic effect
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+dirLight.position.set(1, 1, 1);
+scene.add(dirLight);
+scene.add(new THREE.AmbientLight(0x222222));
+
+// 6) Noise generator and helper object for instances
+const noise = new SimplexNoise();
+const dummy = new THREE.Object3D();
+const up    = new THREE.Vector3(0, 1, 0);        // for oscillation axis
+
+// 7) State-driven parameters (including oscillAmp for sphere sway)
+let vizParams = {
+  speed:        0.3,                             // calm wobble speed
+  amp:          20.0,                            // calm wobble amplitude
+  color:        new THREE.Color(0x88ccff),
+  horizStretch: 1.0,                             // no stretch by default
+  vertStretch:  1.0,
+  rotateSpeed:  0.0,                             // no global rotation by default
+  oscillAmp:    0.0                              // no sphere sway by default
+};
+
 function updateVisualization(state) {
-    if (state === 'listening') {
-        animateBlob();
-        // Use the normal gradient for listening state
-        window.blob.attr('fill', 'url(#blobGradient)');
-    }
-    else if (state === 'thinking') {
-        animateBlob();
-        window.blob.attr('fill', 'url(#blobGradientThinking)');
-    }
-    else if (state === 'speaking') {
-        animateBlob();
-        // Use the inverted gradient for speaking state
-        window.blob.attr('fill', 'url(#blobGradientInverted)');
-    }
-    else {
-        // If state is idle, stop any ongoing animation and reset the blob appearance.
-        if (window.blobAnimation) window.blobAnimation.stop();
-        window.blob.attr('fill', 'url(#blobGradient)');
-    }
+  switch (state) {
+    case 'listening':
+      vizParams = {
+        speed:        0.5,
+        amp:          25.0,
+        color:        new THREE.Color(0xccf5ff), // very light blue
+        horizStretch: 1.0,
+        vertStretch:  1.0,
+        rotateSpeed:  0.0,
+        oscillAmp:    0.0
+      };
+      break;
+    case 'thinking':
+      vizParams = {
+        speed:        0.2,
+        amp:          30.0,
+        color:        new THREE.Color(0xffcc33), // yellow/orange
+        horizStretch: 1.0,                       // no horizontal stretch
+        vertStretch:  1.0,                       // no vertical stretch
+        rotateSpeed:  0.0,                       // no global rotation
+        oscillAmp:    5.0                        // small sphere sway
+      };
+      break;
+    case 'speaking':
+      vizParams = {
+        speed:        0.7,
+        amp:          60.0,
+        color:        new THREE.Color(0x33ff66), // light green
+        horizStretch: 1.0,
+        vertStretch:  1.0,
+        rotateSpeed:  0.0,
+        oscillAmp:    0.0
+      };
+      break;
+    default:                                     // 'idle'
+      vizParams = {
+        speed:        0.3,
+        amp:          20.0,
+        color:        new THREE.Color(0x88ccff), // light blue
+        horizStretch: 1.0,
+        vertStretch:  1.0,
+        rotateSpeed:  0.0,
+        oscillAmp:    0.0
+      };
+  }
+  metalMat.color.copy(vizParams.color);
 }
 
-// Animates the blob by periodically regenerating its path.
-function animateBlob() {
-    if (window.blobAnimation) window.blobAnimation.stop();
-    window.blobAnimation = d3.interval(() => {
-        window.blob.transition()
-            .duration(75)
-            .attr('d', generateBlobPath(300, 300, 150));
-    }, 75);
+// initialize to idle state
+updateVisualization('idle');
+
+// 8) Animation loop: update each sphere's matrix per frame
+function animate() {
+  requestAnimationFrame(animate);
+
+  const t = performance.now() * 0.001 * vizParams.speed;
+
+  for (let i = 0; i < INSTANCE_COUNT; i++) {
+    const dir = directions[i];
+    const r0  = baseRadii[i];
+
+    // compute a 4D noise offset for wobble
+    const n = noise.noise4D(
+      dir.x * r0 * 0.01,
+      dir.y * r0 * 0.01,
+      dir.z * r0 * 0.01,
+      t
+    ) * vizParams.amp;
+
+    // base position = direction * (base radius + wobble)
+    let pos = dir.clone().multiplyScalar(r0 + n);
+
+    // apply horizontal & vertical stretch
+    pos.x *= vizParams.horizStretch;
+    pos.y *= vizParams.vertStretch;
+
+    // apply per-sphere sway if configured
+    if (vizParams.oscillAmp > 0) {
+      // compute tangent vector for sway
+      const tangent = dir.clone().cross(up).normalize();
+      const sway    = Math.sin(t * 10 + i) * vizParams.oscillAmp;
+      pos.add(tangent.multiplyScalar(sway));
+    }
+
+    dummy.position.copy(pos);
+
+    // scale spheres slightly based on wobble
+    const scale = 1 + (n * 0.01);
+    dummy.scale.set(scale, scale, scale);
+
+    dummy.updateMatrix();
+    spheres.setMatrixAt(i, dummy.matrix);
+  }
+
+  spheres.instanceMatrix.needsUpdate = true;
+  renderer.render(scene, camera);
 }
 
-// Initialize the visualization when the script loads.
-initVisualization();
+animate();
 
 // ---------------------------
 // Recording Controls & API Handling Section

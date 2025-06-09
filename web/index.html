@@ -25,7 +25,20 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Include D3.js library -->
     <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
-    <script src="d3.v7.min.js"></script>
+    <!-- <script src="d3.v7.min.js"></script> -->
+    <!-- Remove D3.js, add Three.js for WebGL rendering -->
+    <!-- USE: <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
+    <!-- LATEST: https://cdnjs.com/libraries/three.js/0.174.0 -->
+    <!-- LATEST: <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.core.js"></script> -->
+    <!-- ?: debian repository -->
+    <script src="three.min.js"></script>
+    <!-- Three.js library -->
+    <!-- Add Simplex Noise library for smooth randomness -->
+    <!-- USE: <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script> -->
+    <!-- LATEST: https://cdnjs.com/libraries/simplex-noise -->
+    <!-- LATEST: https://unpkg.com/simplex-noise@4.0.3/dist/cjs/simplex-noise.js -->
+    <!-- ?: npm repository -->
+    <script src="simplex-noise.min.js"></script>
     <!-- Optional: only set desktop viewport meta for mobile user agents -->
     <script>
       if (/Mobi|Android|iPad|Tablet/i.test(navigator.userAgent)) {
