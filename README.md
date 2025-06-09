@@ -92,6 +92,7 @@ The NVA continuously provides the web service with SSL/TLS encryption – both f
 - [ ] Full Support for Mobile Devices (Apple iOS / Android) - workarounds are necessary due to various system limitations
 - [ ] Supports fragmented object processing, resulting in shorter response times and a more natural flow of speech without having to wait for the complete TTS processing
 - [ ] Support for OpenAI Realtime API
+- [x] Version 2.5.3 - Classic Blob (D3.js) replaced by Metal Blobs (WebGL Three.js)
 - [x] Version 2.5.2 - Use sessionStorage so each tab has its own history
 - [x] Version 2.5.1 - Model Recommendation: [Artificial Analysis Intelligence Index](https://github.com/NokkelaAI/artificial-analysis-intelligence-index/)
 - [x] Version 2.5 - Add SystemPrompt "Consultant"
@@ -150,17 +151,29 @@ Afrikaans, Arabic, Armenian, Azerbaijani, Belarusian, Bosnian, Bulgarian, Catala
 
 While the underlying model was trained on 98 languages, we only list the languages that exceeded <50% word error rate (WER) which is an industry standard benchmark for speech to text model accuracy. The model will return results for languages not listed above but the quality will be low.
 
-# Webinterface (Version 2.4) "Assistant"
+# Webinterface (Version 2.5.2) "Classic" Blob
 
-![Example4](web/images/example_4.png)
-
-# Webinterface (Version 2.4.4) "Translator"
-
-![Example2](web/images/example_2.png)
-
-# Webinterface (Version 2.5) "StoryTeller"
+```
+docker pull nokkela/nokkela-voice-assistant:2.5.2-classic
+```
 
 ![Example3](web/images/example_3.png)
+
+# Webinterface (Version 2.5.2) "WebGL" Blob
+
+```
+docker pull nokkela/nokkela-voice-assistant:2.5.2-webgl
+```
+
+![Example5](web/images/example_5.png)
+
+# Webinterface (Version 2.5.2) "WebGL-Metal" Blobs
+
+```
+docker pull nokkela/nokkela-voice-assistant:2.5.2-webgl-metal-blob
+```
+
+![Example6](web/images/example_6.png)
 
 # Requirements
 
