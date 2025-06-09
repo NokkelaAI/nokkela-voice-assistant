@@ -143,7 +143,7 @@ function updateVisualization(state) {
     case 'thinking':
       vizParams = {
         speed:        0.2,
-        amp:          15.0,
+        amp:          30.0,
         color:        new THREE.Color(0xffcc33), // yellow/orange
         horizStretch: 1.0,                       // no horizontal stretch
         vertStretch:  1.0,                       // no vertical stretch
